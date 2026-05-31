@@ -9,3 +9,6 @@ venv/
 
 chroma_db/
 models/
+
+node_modules/
+*.exe
