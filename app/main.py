@@ -63,3 +63,13 @@ def root():
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+@app.get("/db-health")
+def db_health():
+    try:
+        from app.database import get_cursor
+        with get_cursor() as cur:
+            cur.execute("SELECT 1")
+        return {"db": "connected"}
+    except Exception as e:
+        return {"db": "error", "detail": str(e)}
