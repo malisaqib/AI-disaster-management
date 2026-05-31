@@ -39,18 +39,6 @@ app.include_router(programs.router)
 app.include_router(incidents.router)
 app.include_router(rag.router)
 
-@app.on_event("startup")
-def startup_event():
-    try:
-        from rag.db_connector import get_reports
-        from rag.embed_pipeline import EmbeddingEngine
-        reports = get_reports()
-        if reports:
-            EmbeddingEngine().ingest_reports(reports)
-    except Exception as e:
-        import logging
-        logging.getLogger(__name__).warning(f"RAG auto-ingest skipped: {e}")
-
 @app.on_event("shutdown")
 def shutdown_event():
     close_pool()

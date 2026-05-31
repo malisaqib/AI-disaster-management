@@ -6,5 +6,4 @@ pydantic
 
 #RAG dependencies:
 groq
-chromadb
-sentence-transformers
+chromadb[default]

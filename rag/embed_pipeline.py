@@ -2,7 +2,6 @@ import os
 import logging
 from typing import List, Dict, Any
 import chromadb
-from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
 
 
@@ -14,9 +13,8 @@ load_dotenv()
 CHROMA_PATH = os.getenv("CHROMA_PATH", "./chroma_db")
 
 class EmbeddingEngine:
-    def __init__(self, model_name: str = "sentence-transformers/all-MiniLM-L6-v2"):
-        logger.info(f"Initializing Embedding Engine with model: {model_name}")
-        self.model = SentenceTransformer(model_name)
+    def __init__(self):
+        logger.info("Initializing Embedding Engine with ChromaDB default embeddings...")
         self.client = chromadb.PersistentClient(path=CHROMA_PATH)
         self.collection = self.client.get_or_create_collection(
             name="disasterlink_docs",
@@ -58,12 +56,9 @@ class EmbeddingEngine:
                 })
 
             # 2. Batch Encoding (Vectorization)
-            embeddings = self.model.encode(texts, show_progress_bar=False).tolist()
-
-            # 3. Batch Upsert to Vector DB
+            # 3. Batch Upsert to Vector DB (ChromaDB computes embeddings automatically)
             self.collection.upsert(
                 ids=ids,
-                embeddings=embeddings,
                 documents=texts,
                 metadatas=metadatas
             )

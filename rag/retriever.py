@@ -2,7 +2,6 @@ import os
 import logging
 from typing import List, Dict, Any, Optional
 import chromadb
-from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
 
 
@@ -16,11 +15,8 @@ DEFAULT_PATH = os.path.join(os.getcwd(), "chroma_db")
 CHROMA_PATH = os.getenv("CHROMA_PATH", DEFAULT_PATH)
 
 class RetrievalEngine:
-    def __init__(self, model_name: str = "sentence-transformers/all-MiniLM-L6-v2"):
+    def __init__(self):
         try:
-            logger.info(f"Loading retrieval model: {model_name}...")
-            self.model = SentenceTransformer(model_name)
-            
             logger.info(f"Connecting to ChromaDB at: {CHROMA_PATH}")
             self.client = chromadb.PersistentClient(path=CHROMA_PATH)
             self.collection = self.client.get_or_create_collection(
@@ -33,12 +29,9 @@ class RetrievalEngine:
 
     def retrieve(self, query: str, top_k: int = 3, filters: Optional[Dict] = None) -> List[Dict[str, Any]]:
         try:
-            # 1. Vectorize the user's query
-            query_vector = self.model.encode(query).tolist()
-
-            # 2. Query the Vector Database
+            # Query the Vector Database (ChromaDB computes embeddings automatically)
             search_params = {
-                "query_embeddings": [query_vector],
+                "query_texts": [query],
                 "n_results": top_k,
                 "include": ["documents", "metadatas", "distances"]
             }
