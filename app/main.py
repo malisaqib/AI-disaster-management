@@ -9,7 +9,20 @@ import hmac
 
 load_dotenv()
 
-app = FastAPI(title="DisasterLink API", version="1.0.0")
+app = FastAPI(
+    title="DisasterLink API",
+    version="1.0.0",
+    openapi_tags=[],
+    swagger_ui_parameters={"persistAuthorization": True},
+    openapi_extra={
+        "components": {
+            "securitySchemes": {
+                "ApiKeyAuth": {"type": "apiKey", "in": "header", "name": "X-API-Key"}
+            }
+        },
+        "security": [{"ApiKeyAuth": []}],
+    },
+)
 
 app.add_middleware(
     CORSMiddleware,
