@@ -10,7 +10,10 @@ logger = logging.getLogger(__name__)
 
 
 load_dotenv()
-CHROMA_PATH = os.getenv("CHROMA_PATH", "./chroma_db")
+# Anchor to repo root (parent of this rag/ dir) so ingest and retrieval always
+# resolve to the same folder regardless of the process working directory.
+_DEFAULT_CHROMA = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "chroma_db")
+CHROMA_PATH = os.getenv("CHROMA_PATH") or _DEFAULT_CHROMA
 
 class EmbeddingEngine:
     def __init__(self):

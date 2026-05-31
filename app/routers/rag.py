@@ -36,3 +36,18 @@ def rag_ingest():
         status="success",
         reports_ingested=len(reports),
     )
+
+
+@router.get("/debug")
+def rag_debug():
+    import os
+    from rag.embed_pipeline import CHROMA_PATH as EMBED_PATH
+    from rag.retriever import CHROMA_PATH as RETRIEVE_PATH
+    retriever = RetrievalEngine()
+    return {
+        "cwd": os.getcwd(),
+        "embed_path": EMBED_PATH,
+        "retrieve_path": RETRIEVE_PATH,
+        "paths_match": EMBED_PATH == RETRIEVE_PATH,
+        "collection_count": retriever.collection.count(),
+    }

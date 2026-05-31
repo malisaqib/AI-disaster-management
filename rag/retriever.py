@@ -11,8 +11,10 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-DEFAULT_PATH = os.path.join(os.getcwd(), "chroma_db")
-CHROMA_PATH = os.getenv("CHROMA_PATH", DEFAULT_PATH)
+# Anchor to repo root (parent of this rag/ dir) so ingest and retrieval always
+# resolve to the same folder regardless of the process working directory.
+DEFAULT_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "chroma_db")
+CHROMA_PATH = os.getenv("CHROMA_PATH") or DEFAULT_PATH
 
 class RetrievalEngine:
     def __init__(self):
