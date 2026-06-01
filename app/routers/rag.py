@@ -8,9 +8,25 @@ from app.schemas.rag import RAGQuery, RAGResponse, RAGSource, IngestResponse
 router = APIRouter(prefix="/rag", tags=["RAG AI Assistant"])
 
 
+def _ensure_ingested(retriever: RetrievalEngine) -> RetrievalEngine:
+    """Self-heal: if the vector store is empty (e.g. Render wiped the ephemeral
+    disk on a cold start), ingest the reports automatically so the AI works
+    without anyone clicking 'Re-ingest'."""
+    try:
+        if retriever.collection.count() == 0:
+            reports = get_reports()
+            if reports:
+                EmbeddingEngine().ingest_reports(reports)
+                return RetrievalEngine()
+    except Exception:
+        pass
+    return retriever
+
+
 @router.post("/query", response_model=RAGResponse)
 def rag_query(data: RAGQuery):
     retriever = RetrievalEngine()
+    retriever = _ensure_ingested(retriever)
     generator = GenerationEngine()
 
     docs = retriever.retrieve(data.query, top_k=data.top_k, filters=data.filters)

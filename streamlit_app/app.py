@@ -3,11 +3,25 @@ import pandas as pd
 import folium
 from streamlit_folium import st_folium
 from datetime import date
-from api import get, post
-from components import stat_card, data_table, severity_color, format_date, severity_to_color
+from api import get, post, warm_up
+from components import (
+    inject_css, page_header, stat_card, data_table,
+    severity_color, severity_badge, format_date, severity_to_color,
+)
 
 st.set_page_config(page_title="DisasterLink", page_icon="🚨", layout="wide")
-st.title("DisasterLink Dashboard")
+inject_css()
+page_header("DisasterLink Dashboard", "Disaster relief coordination · Pakistan")
+
+# Wake the backend if the free host has spun down (shows a friendly message
+# instead of red errors while it cold-starts).
+if not st.session_state.get("backend_ready"):
+    with st.spinner("Connecting to server… (free hosting may take up to a minute to wake up)"):
+        if warm_up():
+            st.session_state.backend_ready = True
+        else:
+            st.warning("The backend is starting up. Please wait a moment and refresh.")
+            st.stop()
 
 page = st.sidebar.selectbox(
     "Navigate",
@@ -38,7 +52,17 @@ if page == "Dashboard":
         if active:
             st.subheader("Active Disasters")
             for d in active:
-                st.warning(f"**{d['disaster_name']}** — Severity: {d['severity_level']} | Declared: {format_date(d['declaration_date'])}")
+                st.markdown(
+                    f"<div style='background:#fff;border:1px solid #e2e8f0;border-left:4px solid #2563eb;"
+                    f"border-radius:10px;padding:0.8rem 1.1rem;margin-bottom:0.6rem;"
+                    f"display:flex;align-items:center;justify-content:space-between;"
+                    f"box-shadow:0 1px 2px rgba(15,23,42,0.05);'>"
+                    f"<span style='font-weight:600;color:#0f172a;'>{d['disaster_name']}</span>"
+                    f"<span>{severity_badge(d['severity_level'])}"
+                    f"<span style='color:#64748b;font-size:0.85rem;margin-left:0.8rem;'>"
+                    f"Declared {format_date(d['declaration_date'])}</span></span></div>",
+                    unsafe_allow_html=True,
+                )
 
         st.subheader("Recent Incident Reports")
         reports = get("/incidents", params={"limit": 10})
